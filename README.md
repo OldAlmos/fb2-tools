@@ -72,7 +72,7 @@ python3 check_fb2.py /путь/к/библиотеке
 ## Установка
 
 ```bash
-git clone https://github.com/<ваш_логин>/fb2-tools.git
+git clone https://github.com/OldAlmos/fb2-tools.git
 cd fb2-tools
 chmod +x check_fb2.py fix_fb2.py clean_fb2_bak.sh
 ```
