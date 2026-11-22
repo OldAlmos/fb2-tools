@@ -19,6 +19,9 @@ def check_bytes(data: bytes) -> list[str]:
         return [f"неверный корневой элемент: {root.tag}"]
 
     errors = []
+    # посторонний текст между элементами верхнего уровня (например, "on>on>on>")
+    if (root.text or "").strip() or any((child.tail or "").strip() for child in root):
+        errors.append("посторонний текст внутри <FictionBook>")
     if root.find(f"{{{NS}}}description") is None:
         errors.append("нет <description>")
     elif root.find(f"{{{NS}}}description/{{{NS}}}title-info") is None:
