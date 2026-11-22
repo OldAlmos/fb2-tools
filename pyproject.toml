@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fb2-tools"
+version = "0.2.0"
+description = "Проверка и починка FB2-файлов"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+fb2tools = "fb2tools.cli:main"
+
+[tool.setuptools]
+packages = ["fb2tools"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
