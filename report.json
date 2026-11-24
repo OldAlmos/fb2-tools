@@ -1,0 +1,20 @@
+{
+  "generated": "2026-11-24T16:33:46+00:00",
+  "tool_version": "0.4.0",
+  "folder": "D:\\A_book",
+  "total": 257,
+  "with_errors": 1,
+  "files": [
+    {
+      "path": "D:\\A_book\\Против странного устройства.fb2",
+      "ok": false,
+      "fixable": true,
+      "problems": [
+        {
+          "code": "stray_text",
+          "message": "посторонний текст внутри <FictionBook>"
+        }
+      ]
+    }
+  ]
+}

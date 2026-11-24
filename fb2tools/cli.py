@@ -4,9 +4,9 @@ import sys
 from pathlib import Path
 
 from . import __version__
-from .checker import check_file, iter_fb2_files
 from .cleaner import delete_files, iter_bak_files
 from .fixer import process_file
+from .report import FORMATS, render, scan
 
 YES_ANSWERS = {"y", "yes", "д", "да"}
 
@@ -21,16 +21,24 @@ def _folder_exists(folder: Path) -> bool:
 def cmd_check(args: argparse.Namespace) -> int:
     if not _folder_exists(args.folder):
         return 2
-    bad = total = 0
-    for path in iter_fb2_files(args.folder):
-        total += 1
-        errors = check_file(path)
-        if errors:
-            bad += 1
-            print(path)
-            for e in errors:
-                print(f"    - {e}")
-    print(f"\nПроверено: {total}, с ошибками: {bad}", file=sys.stderr)
+    reports = scan(args.folder)
+    bad = sum(1 for r in reports if not r.ok)
+
+    if args.output:
+        # CSV с BOM (utf-8-sig), чтобы Excel на Windows правильно показал кириллицу
+        encoding = "utf-8-sig" if args.format == "csv" else "utf-8"
+        try:
+            with open(args.output, "w", encoding=encoding, newline="") as f:
+                render(args.format, args.folder, reports, f,
+                       include_ok=args.all, to_file=True)
+        except OSError as e:
+            print(f"Не удалось записать отчёт: {e}", file=sys.stderr)
+            return 2
+        print(f"Отчёт сохранён: {args.output}", file=sys.stderr)
+    else:
+        render(args.format, args.folder, reports, sys.stdout, include_ok=args.all)
+
+    print(f"\nПроверено: {len(reports)}, с ошибками: {bad}", file=sys.stderr)
     return 1 if bad else 0
 
 
@@ -94,6 +102,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_check = sub.add_parser("check", help="найти файлы с ошибками (ничего не меняет)")
     p_check.add_argument("folder", nargs="?", type=Path, default=Path("."))
+    p_check.add_argument("--format", choices=FORMATS, default="text",
+                         help="формат отчёта (по умолчанию text)")
+    p_check.add_argument("-o", "--output", type=Path,
+                         help="сохранить отчёт в файл (рекомендуется для csv и json)")
+    p_check.add_argument("--all", action="store_true",
+                         help="для csv и json: включить и файлы без ошибок")
     p_check.set_defaults(func=cmd_check)
 
     p_fix = sub.add_parser("fix", help="починить известные повреждения")

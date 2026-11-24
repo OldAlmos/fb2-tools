@@ -4,6 +4,8 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .checker import diagnose_bytes
+
 # 1. Обрезанный корневой тег: любой незакрытый <FictionBook ... перед следующим <
 HEAD = re.compile(rb'<FictionBook\b[^<>]*(?=<)')
 ROOT = (b'<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
@@ -39,6 +41,18 @@ def parses(data: bytes) -> bool:
         return True
     except ET.ParseError:
         return False
+
+
+def is_fixable(path: Path) -> bool:
+    """True, если fix полностью исправит файл: после правки проверка не находит проблем."""
+    if path.suffix.lower() != ".fb2":
+        return False
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return False
+    new, notes = repair(data)
+    return bool(notes) and not diagnose_bytes(new)
 
 
 def process_file(path: Path, apply: bool = False) -> FixResult | None:
